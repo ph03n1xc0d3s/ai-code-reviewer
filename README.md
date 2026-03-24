@@ -232,3 +232,6 @@ If you find this useful, give it a star — it helps visibility and future devel
 Commercial licensing is available for organizations that wish to use this project without AGPL obligations.
 
 ---
+
+<img width="916" height="839" alt="image" src="https://github.com/user-attachments/assets/8377c1bb-83aa-4fc5-95b2-5844a964c03d" />
+
