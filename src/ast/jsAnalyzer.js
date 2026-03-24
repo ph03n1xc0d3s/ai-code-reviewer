@@ -1,4 +1,4 @@
-export function analyzeJS(ast, file, lineMap) {
+export function analyzeJS(ast, file, lineMap = []) {
   const issues = [];
 
   function walk(node) {
@@ -49,12 +49,12 @@ export function analyzeJS(ast, file, lineMap) {
       if (Array.isArray(child)) {
         child.forEach(walk);
       } else if (typeof child === "object" && child !== null) {
-        walk(child, lineMap);
+        walk(child);
       }
     }
   }
 
-  walk(ast, lineMap);
+  walk(ast);
 
   return issues;
 }
