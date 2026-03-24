@@ -1,8 +1,47 @@
-import { chunkDiff } from "./chunk.service.js";
+import { parseDiff } from "./diff.service.js";
 import { analyzeChunk } from "./ai.service.js";
+import { runRules } from "../rules/index.js";
+import { parseJS } from "../ast/jsParser.js";
+import { analyzeJS } from "../ast/jsAnalyzer.js";
+import { parsePHP } from "../ast/phpParser.js";
+import { analyzePHP } from "../ast/phpAnalyzer.js";
 
 export async function processReview(diff) {
-  const chunks = chunkDiff(diff);
+  const files = parseDiff(diff);
+
+  const issues = [];
+
+  for (const fileObj of files) {
+    // If it's a JS file, do AST analysis
+    if (fileObj.file.endsWith(".js")) {
+      const code = fileObj.changes.map((c) => c.content).join("\n");
+
+      const ast = parseJS(code);
+
+      if (ast) {
+        const astIssues = analyzeJS(ast, fileObj.file);
+        issues.push(...astIssues);
+      }
+    }
+
+    // If it's a PHP file, do AST analysis
+    if (fileObj.file.endsWith(".php")) {
+      const code = fileObj.changes.map((c) => c.content).join("\n");
+
+      const ast = parsePHP(code);
+
+      if (ast) {
+        const astIssues = analyzePHP(ast, fileObj.file);
+        issues.push(...astIssues);
+      }
+    }
+
+    // Fallback to rule-based checks for all files
+    for (const change of fileObj.changes) {
+      const results = runRules(change, fileObj.file);
+      issues.push(...results);
+    }
+  }
 
   const results = await Promise.all(
     chunks.map((chunk) => analyzeChunk(chunk))
