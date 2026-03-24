@@ -16,8 +16,6 @@ router.post("/", async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error(err);
-    console.log(err); // Added for checking ai-code-reviewer PR comment 
-    console.log(err); // Added for checking ai-code-reviewer PR comment 
     res.status(500).json({ error: "Internal error" });
   }
 });
