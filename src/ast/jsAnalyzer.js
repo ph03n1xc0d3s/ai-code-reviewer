@@ -49,12 +49,12 @@ export function analyzeJS(ast, file, lineMap) {
       if (Array.isArray(child)) {
         child.forEach(walk);
       } else if (typeof child === "object" && child !== null) {
-        walk(child);
+        walk(child, lineMap);
       }
     }
   }
 
-  walk(ast);
+  walk(ast, lineMap);
 
   return issues;
 }
