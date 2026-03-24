@@ -3,6 +3,7 @@ export function parseDiff(diff) {
   const lines = diff.split("\n");
 
   let currentFile = null;
+  let currentLine = 0;
 
   for (const line of lines) {
     if (line.startsWith("diff --git")) {
@@ -13,12 +14,25 @@ export function parseDiff(diff) {
         file: fileName,
         changes: [],
       };
+    }
+    // capture line number from hunk
+    else if (line.startsWith("@@")) {
+      const match = line.match(/\+(\d+)/);
+      if (match) {
+        currentLine = parseInt(match[1], 10);
+      }
     } else if (line.startsWith("+") && !line.startsWith("+++")) {
       currentFile?.changes.push({
         type: "added",
         content: line.substring(1),
+        line: currentLine,
       });
+      currentLine++;
     }
+    // context lines (not removed)
+    else if (!line.startsWith("-")) {
+      currentLine++;
+    }   
   }
 
   if (currentFile) files.push(currentFile);

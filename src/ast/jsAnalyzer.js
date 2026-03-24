@@ -4,6 +4,10 @@ export function analyzeJS(ast, file) {
   function walk(node) {
     if (!node) return;
 
+    // get AST line
+    const loc = node.loc?.start?.line;
+    const actualLine = lineMap[loc - 1] || "unknown";
+
     // Detect SQL Injection pattern
     if (node.type === "BinaryExpression" && node.operator === "+") {
       if (
@@ -14,6 +18,7 @@ export function analyzeJS(ast, file) {
           type: "security",
           severity: "critical",
           file,
+          line: actualLine,
           description: "SQL Injection via string concatenation",
           fix: "Use parameterized queries",
         });
@@ -30,6 +35,7 @@ export function analyzeJS(ast, file) {
           type: "quality",
           severity: "low",
           file,
+          line: actualLine,
           description: "console.log found",
           fix: "Remove debug logs",
         });

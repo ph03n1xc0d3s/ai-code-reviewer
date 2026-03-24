@@ -65,6 +65,7 @@ function formatComment(result) {
   for (const issue of result.issues) {
     text += `### ${getEmoji(issue.severity)} ${issue.type.toUpperCase()}\n`;
     text += `- **File:** ${issue.file}\n`;
+    text += `- **File:** ${issue.file}:${issue.line}\n`;
     text += `- **Issue:** ${issue.description}\n`;
     text += `- **Fix:** ${issue.fix}\n\n`;
   }
