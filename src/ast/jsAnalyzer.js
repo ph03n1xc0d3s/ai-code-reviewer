@@ -1,4 +1,4 @@
-export function analyzeJS(ast, file) {
+export function analyzeJS(ast, file, lineMap) {
   const issues = [];
 
   function walk(node) {
