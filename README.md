@@ -202,13 +202,14 @@ Fallback mode ensures:
 
 ## 📄 License
 
-MIT License
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
 
----
+This means:
 
-## 💡 Note
+* If you modify and distribute this code, you must open-source your changes.
+* If you run this as a service (e.g., SaaS), you must also make the source code available.
 
-While this repository is MIT licensed, hosted or commercial versions of this system may include additional proprietary features.
+See the `LICENSE` file for details.
 
 ---
 
@@ -228,5 +229,6 @@ PRs, ideas, and rule contributions are welcome.
 ## ⭐ Support
 
 If you find this useful, give it a star — it helps visibility and future development.
+Commercial licensing is available for organizations that wish to use this project without AGPL obligations.
 
 ---
