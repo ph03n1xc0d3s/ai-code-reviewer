@@ -17,12 +17,19 @@ export async function processReview(diff) {
   for (const fileObj of files) {
     // If it's a JS file, do AST analysis
     if (fileObj.file.endsWith(".js")) {
-      const code = fileObj.changes.map((c) => c.content).join("\n");
+      let code = "";
+      let lineMap = [];
+
+      // preserve line alignment
+      for (const change of fileObj.changes) {
+        code += change.content + "\n";
+        lineMap.push(change.lineNumber);
+      }
 
       const ast = parseJS(code);
 
       if (ast) {
-        const astIssues = analyzeJS(ast, fileObj.file);
+        const astIssues = analyzeJS(ast, fileObj.file, lineMap);
         issues.push(...astIssues);
       }
     }
@@ -40,10 +47,10 @@ export async function processReview(diff) {
     }
 
     // Fallback to rule-based checks for all files
-    for (const change of fileObj.changes) {
-      const results = runRules(change, fileObj.file);
-      issues.push(...results);
-    }
+    // for (const change of fileObj.changes) {
+    //   const results = runRules(change, fileObj.file);
+    //   issues.push(...results);
+    // }
   }
 
   if (chunks != null) {
