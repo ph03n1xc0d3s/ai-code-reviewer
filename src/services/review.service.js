@@ -1,8 +1,18 @@
-import { chunkDiff } from "./chunk.service.js";
+import { parseDiff } from "./diff.service.js";
 import { analyzeChunk } from "./ai.service.js";
+import { runRules } from "../rules/index.js";
 
 export async function processReview(diff) {
-  const chunks = chunkDiff(diff);
+  const files = parseDiff(diff);
+
+  const issues = [];
+
+  for (const fileObj of files) {
+    for (const change of fileObj.changes) {
+      const results = runRules(change, fileObj.file);
+      issues.push(...results);
+    }
+  }
 
   const results = await Promise.all(
     chunks.map((chunk) => analyzeChunk(chunk))
