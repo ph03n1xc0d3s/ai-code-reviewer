@@ -1,5 +1,6 @@
 import { parseDiff } from "./diff.service.js";
 import { analyzeChunk } from "./ai.service.js";
+import { chunkDiff } from "./chunk.service.js";
 import { runRules } from "../rules/index.js";
 import { parseJS } from "../ast/jsParser.js";
 import { analyzeJS } from "../ast/jsAnalyzer.js";
@@ -7,6 +8,8 @@ import { parsePHP } from "../ast/phpParser.js";
 import { analyzePHP } from "../ast/phpAnalyzer.js";
 
 export async function processReview(diff) {
+//   const chunks = chunkDiff(diff);  
+  const chunks = null; // Disable chunking for now, focus on rule-based and AST analysis
   const files = parseDiff(diff);
 
   const issues = [];
@@ -43,15 +46,19 @@ export async function processReview(diff) {
     }
   }
 
-  const results = await Promise.all(
-    chunks.map((chunk) => analyzeChunk(chunk))
-  );
+  if (chunks != null) {
+    const results = await Promise.all(
+      chunks.map((chunk) => analyzeChunk(chunk)),
+    );
 
-  const merged = results.flatMap((r) => r.issues);
+    const merged = results.flatMap((r) => r.issues);
+  } else {
+    console.warn("No chunks to analyze, skipping AI analysis");
+  }
 
   return {
-    totalIssues: merged.length,
-    issues: dedupeIssues(merged),
+    totalIssues: issues.length,
+    issues : dedupeIssues(issues),
   };
 }
 
