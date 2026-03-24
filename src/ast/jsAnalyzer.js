@@ -1,12 +1,28 @@
 export function analyzeJS(ast, file, lineMap = []) {
   const issues = [];
 
+  function resolveLine(loc, lineMap) {
+    if (!loc || !Array.isArray(lineMap)) return "unknown";
+
+    const index = loc - 1;
+
+    if (index >= 0 && index < lineMap.length) {
+      return lineMap[index] ?? "unknown";
+    }
+
+    return "unknown";
+  }
+
   function walk(node) {
-    if (!node) return;
+    // Skip invalid nodes
+    if (!node || typeof node !== "object") return;
+
+    // Only process real AST nodes
+    if (!node.type || typeof node.type !== "string") return;
 
     // get AST line
     const loc = node.loc?.start?.line;
-    const actualLine = lineMap[loc - 1] || "unknown";
+    const actualLine = resolveLine(loc, lineMap);
 
     // Detect SQL Injection pattern
     if (node.type === "BinaryExpression" && node.operator === "+") {
@@ -36,7 +52,7 @@ export function analyzeJS(ast, file, lineMap = []) {
           severity: "low",
           file,
           line: actualLine,
-          description: "console.log found",
+          description: "console.log statement found",
           fix: "Remove debug logs",
         });
       }
@@ -47,8 +63,10 @@ export function analyzeJS(ast, file, lineMap = []) {
       const child = node[key];
 
       if (Array.isArray(child)) {
-        child.forEach(walk);
-      } else if (typeof child === "object" && child !== null) {
+        child.forEach((c) => {
+          if (c && typeof c === "object" && c.type) walk(c);
+        });
+      } else if (child && typeof child === "object" && child.type) {
         walk(child);
       }
     }

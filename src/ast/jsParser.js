@@ -5,6 +5,11 @@ export function parseJS(code) {
     return parse(code, {
       sourceType: "module",
       plugins: ["jsx"],
+      allowReturnOutsideFunction: true,
+      errorRecovery: true,
+      ranges: true,
+      tokens: true,
+      allowReturnOutsideFunction: true,
     });
   } catch (e) {
     return null;

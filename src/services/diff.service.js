@@ -25,7 +25,7 @@ export function parseDiff(diff) {
       currentFile?.changes.push({
         type: "added",
         content: line.substring(1),
-        line: currentLine,
+        lineNumber: currentLine,
       });
       currentLine++;
     }

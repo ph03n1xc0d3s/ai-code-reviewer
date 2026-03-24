@@ -17,8 +17,14 @@ export async function processReview(diff) {
   for (const fileObj of files) {
     // If it's a JS file, do AST analysis
     if (fileObj.file.endsWith(".js")) {
-      const code = fileObj.changes.map((c) => c.content).join("\n");
-      const lineMap = fileObj.changes.map(c => c.lineNumber);
+      let code = "";
+      let lineMap = [];
+
+      // preserve line alignment
+      for (const change of fileObj.changes) {
+        code += change.content + "\n";
+        lineMap.push(change.lineNumber);
+      }
 
       const ast = parseJS(code);
 
