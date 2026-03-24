@@ -8,7 +8,8 @@ import { parsePHP } from "../ast/phpParser.js";
 import { analyzePHP } from "../ast/phpAnalyzer.js";
 
 export async function processReview(diff) {
-  const chunks = chunkDiff(diff);  
+//   const chunks = chunkDiff(diff);  
+  const chunks = null; // Disable chunking for now, focus on rule-based and AST analysis
   const files = parseDiff(diff);
 
   const issues = [];
