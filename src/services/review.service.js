@@ -6,10 +6,11 @@ import { parseJS } from "../ast/jsParser.js";
 import { analyzeJS } from "../ast/jsAnalyzer.js";
 import { parsePHP } from "../ast/phpParser.js";
 import { analyzePHP } from "../ast/phpAnalyzer.js";
+import { PROMPT_INJECTION_PATTERNS } from "../config/security/prompt-injection.js";
 
 export async function processReview(diff) {
   let sanitizedDiff = sanitizeDiff(diff);
-//   const chunks = chunkDiff(diff);  
+  //   const chunks = chunkDiff(diff);
   const chunks = null; // Disable chunking for now, focus on rule-based and AST analysis
   const files = parseDiff(sanitizedDiff);
 
@@ -67,7 +68,7 @@ export async function processReview(diff) {
 
   return {
     totalIssues: issues.length,
-    issues : dedupeIssues(issues),
+    issues: dedupeIssues(issues),
   };
 }
 
@@ -83,19 +84,20 @@ function dedupeIssues(issues) {
 }
 
 function sanitizeDiff(diff) {
-  console.log(diff, 'before sanitization');
-  const blocked = [
-    "ignore previous instructions",
-    "act as",
-    "system prompt"
-  ];
-
-  for (const word of blocked) {
-    if (diff.toLowerCase().includes(word)) {
-      console.log(`Prompt injection attempt detected: "${word}"`);
-      throw new Error("PROMPT_INJECTION_DETECTED");
+  let normalized = normalize(diff);
+  console.log(normalized, "before sanitization");
+  for (const pattern of PROMPT_INJECTION_PATTERNS) {
+    if (pattern.test(normalized)) {
+      return console.log('⚠️ Potential prompt injection detected, exiting before review');
     }
   }
-
   return diff;
+}
+
+// Normalizes unique text injections that could be used to bypass AI detection, such as zero-width characters, homoglyphs, or obfuscated patterns.
+function normalize(diff){
+    return diff
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .replace(/[^a-z0-9 ]/g, '');
 }
