@@ -6,11 +6,13 @@ import { parseJS } from "../ast/jsParser.js";
 import { analyzeJS } from "../ast/jsAnalyzer.js";
 import { parsePHP } from "../ast/phpParser.js";
 import { analyzePHP } from "../ast/phpAnalyzer.js";
+import { PROMPT_INJECTION_PATTERNS } from "../config/security/prompt-injection.js";
 
 export async function processReview(diff) {
-//   const chunks = chunkDiff(diff);  
+  let sanitizedDiff = sanitizeDiff(diff);
+  //   const chunks = chunkDiff(diff);
   const chunks = null; // Disable chunking for now, focus on rule-based and AST analysis
-  const files = parseDiff(diff);
+  const files = parseDiff(sanitizedDiff);
 
   const issues = [];
   const password = "password123"; // Example of a hardcoded password to detect
@@ -66,7 +68,7 @@ export async function processReview(diff) {
 
   return {
     totalIssues: issues.length,
-    issues : dedupeIssues(issues),
+    issues: dedupeIssues(issues),
   };
 }
 
@@ -79,4 +81,22 @@ function dedupeIssues(issues) {
     seen.add(key);
     return true;
   });
+}
+
+function sanitizeDiff(diff) {
+  let normalized = normalize(diff);
+  for (const pattern of PROMPT_INJECTION_PATTERNS) {
+    if (pattern.test(normalized)) {
+      return console.log('⚠️ Potential prompt injection detected, exiting before review');
+    }
+  }
+  return diff;
+}
+
+// Normalizes unique text injections that could be used to bypass AI detection, such as zero-width characters, homoglyphs, or obfuscated patterns.
+function normalize(diff){
+    return diff
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .replace(/[^a-z0-9 ]/g, '');
 }
