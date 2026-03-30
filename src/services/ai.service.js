@@ -1,6 +1,31 @@
 import OpenAI from "openai";
+import Ajv from "ajv";
+
 
 let client = null;
+const ajv = new Ajv();
+const SYSTEM_PROMPT = `
+You are a senior security code reviewer.
+
+Return ONLY valid JSON in this format:
+{
+  "issues": [
+    {
+      "type": "string",
+      "severity": "low|medium|high|critical",
+      "file": "string",
+      "line": number,
+      "description": "string",
+      "fix": "string"
+    }
+  ]
+}
+
+Rules:
+- No markdown
+- No explanation outside JSON
+- Focus on security + logic bugs
+`;
 
 function getClient() {
   if (!client && process.env.OPENAI_API_KEY) {
@@ -22,11 +47,41 @@ export async function analyzeChunk(chunk) {
   try {
     const response = await client.chat.completions.create({
       model: "gpt-4.1",
-      messages: [{ role: "user", content: chunk }],
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: chunk },
+      ],
       temperature: 0.2,
+      response_format: { type: "json_object" },
     });
 
-    return JSON.parse(response.choices[0].message.content);
+    const schema = {
+      type: "object",
+      properties: {
+        issues: {
+          type: "array",
+          items: {
+            type: "object",
+            required: ["type", "severity", "description", "fix"],
+            properties: {
+              type: { type: "string" },
+              severity: { type: "string" },
+              description: { type: "string" },
+              fix: { type: "string" },
+            },
+          },
+        },
+      },
+      required: ["issues"],
+    };
+
+    const validate = ajv.compile(schema);
+
+    const parsed = JSON.parse(content);
+
+    if (!validate(parsed)) {
+      throw new Error("INVALID_AI_RESPONSE");
+    }
   } catch (err) {
     if (err.code === "insufficient_quota") {
       console.warn("⚠️ Quota exceeded → using mock AI");
