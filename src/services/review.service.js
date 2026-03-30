@@ -85,7 +85,6 @@ function dedupeIssues(issues) {
 
 function sanitizeDiff(diff) {
   let normalized = normalize(diff);
-  console.log(normalized, "before sanitization");
   for (const pattern of PROMPT_INJECTION_PATTERNS) {
     if (pattern.test(normalized)) {
       return console.log('⚠️ Potential prompt injection detected, exiting before review');
