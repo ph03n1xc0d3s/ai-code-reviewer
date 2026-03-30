@@ -9,6 +9,7 @@ import { analyzePHP } from "../ast/phpAnalyzer.js";
 import { PROMPT_INJECTION_PATTERNS } from "../config/security/prompt-injection.js";
 
 export async function processReview(diff) {
+  const issues = [];
   const chunks = null; // Disable chunking for now, focus on rule-based and AST analysis
   let sanitizedDiff = sanitizeDiff(diff);
   if (chunks == null) {
@@ -16,7 +17,6 @@ export async function processReview(diff) {
     //   const chunks = chunkDiff(diff);
     const files = parseDiff(diff);
 
-    const issues = [];
     const password = "password123"; // Example of a hardcoded password to detect
 
     for (const fileObj of files) {
