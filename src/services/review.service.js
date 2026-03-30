@@ -11,8 +11,8 @@ import { PROMPT_INJECTION_PATTERNS } from "../config/security/prompt-injection.j
 export async function processReview(diff) {
   const chunks = null; // Disable chunking for now, focus on rule-based and AST analysis
   let sanitizedDiff = sanitizeDiff(diff);
-  if (sanitizedDiff !== true && chunks == null) {
-    sanitizedDiff ? console.warn("Fallback to Static Rules due to potential prompt injection") : console.warn("Using Static Rules due to chunking disabled");
+  if (chunks == null) {
+    sanitizedDiff ? console.warn("Fallback to Static Rules due to no AI api key") : console.warn("Using Static Rules due to chunking disabled");
     //   const chunks = chunkDiff(diff);
     const files = parseDiff(diff);
 
