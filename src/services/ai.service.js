@@ -39,7 +39,7 @@ function getClient() {
 export async function analyzeChunk(chunk) {
   const client = getClient();
 
-  // 🔥 FALLBACK MODE (no API key / quota)
+  // FALLBACK MODE (no API key / quota)
   if (!client) {
     return mockResponse(chunk);
   }
