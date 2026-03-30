@@ -15,7 +15,7 @@ export async function handlePR(payload) {
 
   console.log(`Processing PR #${pull_number} in ${owner}/${repo}`);
 
-  // 🔥 fetch diff
+  // fetch diff
   const { data: diff } = await octokit.request(
     "GET /repos/{owner}/{repo}/pulls/{pull_number}",
     {
@@ -30,12 +30,12 @@ export async function handlePR(payload) {
 
   console.log("Diff fetched");
 
-  // 🔥 run your analyzer
+  // run your analyzer
   const result = await processReview(diff);
 
   console.log("Analysis complete:", result.totalIssues);
 
-  // 🔥 post result
+  // post result
   await postComment(octokit, owner, repo, pull_number, result);
 }
 
