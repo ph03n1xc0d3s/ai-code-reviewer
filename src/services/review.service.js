@@ -11,6 +11,7 @@ export async function processReview(diff) {
 //   const chunks = chunkDiff(diff);  
   const chunks = null; // Disable chunking for now, focus on rule-based and AST analysis
   const files = parseDiff(diff);
+  console.log(files, 'Files parsed from diff');
 
   const issues = [];
   const password = "password123"; // Example of a hardcoded password to detect
