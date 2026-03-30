@@ -1,5 +1,4 @@
 export function parseDiff(diff) {
-  console.log(diff, "parsing diff");
   const files = [];
   const lines = diff.split("\n");
 
