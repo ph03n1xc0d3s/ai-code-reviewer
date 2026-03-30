@@ -31,10 +31,8 @@ export async function handlePR(payload) {
   console.log("Diff fetched");
 
   // 🔥 run your analyzer
-  console.log("Starting analysis...");
-  console.log(diff, "diff to analyze");
   const result = await processReview(diff);
-  
+
   console.log("Analysis complete:", result.totalIssues);
 
   // 🔥 post result
