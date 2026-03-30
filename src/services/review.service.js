@@ -83,6 +83,7 @@ function dedupeIssues(issues) {
 }
 
 function sanitizeDiff(diff) {
+  console.log(diff, 'before sanitization');
   const blocked = [
     "ignore previous instructions",
     "act as",
@@ -91,6 +92,7 @@ function sanitizeDiff(diff) {
 
   for (const word of blocked) {
     if (diff.toLowerCase().includes(word)) {
+      console.log(`Prompt injection attempt detected: "${word}"`);
       throw new Error("PROMPT_INJECTION_DETECTED");
     }
   }
