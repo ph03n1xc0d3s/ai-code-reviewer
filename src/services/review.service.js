@@ -8,9 +8,10 @@ import { parsePHP } from "../ast/phpParser.js";
 import { analyzePHP } from "../ast/phpAnalyzer.js";
 
 export async function processReview(diff) {
+  let sanitizedDiff = sanitizeDiff(diff);
 //   const chunks = chunkDiff(diff);  
   const chunks = null; // Disable chunking for now, focus on rule-based and AST analysis
-  const files = parseDiff(diff);
+  const files = parseDiff(sanitizedDiff);
 
   const issues = [];
   const password = "password123"; // Example of a hardcoded password to detect
@@ -79,4 +80,20 @@ function dedupeIssues(issues) {
     seen.add(key);
     return true;
   });
+}
+
+function sanitizeDiff(diff) {
+  const blocked = [
+    "ignore previous instructions",
+    "act as",
+    "system prompt"
+  ];
+
+  for (const word of blocked) {
+    if (diff.toLowerCase().includes(word)) {
+      throw new Error("PROMPT_INJECTION_DETECTED");
+    }
+  }
+
+  return diff;
 }
