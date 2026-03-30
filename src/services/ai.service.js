@@ -1,7 +1,8 @@
 import OpenAI from "openai";
 import Ajv from "ajv";
+import { searchSimilar, storeIssue } from "./vector.service.js";
 
-
+let similarIssues;
 let client = null;
 const ajv = new Ajv();
 const SYSTEM_PROMPT = `
@@ -38,6 +39,14 @@ function getClient() {
 
 export async function analyzeChunk(chunk) {
   const client = getClient();
+  similarIssues = await searchSimilar(chunk);
+
+  const enrichedPrompt = `
+  Previous similar issues:
+  ${similarIssues.join("\n")}
+
+  ${SYSTEM_PROMPT}
+  `;
 
   // FALLBACK MODE (no API key / quota)
   if (!client) {
@@ -48,7 +57,7 @@ export async function analyzeChunk(chunk) {
     const response = await client.chat.completions.create({
       model: "gpt-4.1",
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
+        { role: "system", content: enrichedPrompt },
         { role: "user", content: chunk },
       ],
       temperature: 0.2,
@@ -75,13 +84,21 @@ export async function analyzeChunk(chunk) {
       required: ["issues"],
     };
 
+    const content = response.choices[0].message.content;
     const validate = ajv.compile(schema);
-
     const parsed = JSON.parse(content);
-
     if (!validate(parsed)) {
       throw new Error("INVALID_AI_RESPONSE");
     }
+    // Store results in Chroma 
+    for (const issue of parsed.issues) {
+      // optional: store only meaningful issues
+      if (["high", "critical"].includes(issue.severity?.toLowerCase())) {
+        await storeIssue(issue);
+      }
+    }
+    return parsed;
+    
   } catch (err) {
     if (err.code === "insufficient_quota") {
       console.warn("⚠️ Quota exceeded → using mock AI");
